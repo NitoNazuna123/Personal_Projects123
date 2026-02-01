@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Advanced Password Strength Analyzer</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --weak-color: #dc3545;
+            --moderate-color: #ffc107;
+            --strong-color: #198754;
+            --excellent-color: #0d6efd;
+            --mobile-padding: 1rem;
+            --tablet-padding: 1.5rem;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        html {
+            font-size: 16px;
+        }
+        
+        body {
+            background: 
+                linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+                url('https://raw.githubusercontent.com/NitoNazuna123/just4fun1000101/main/backgroundphoto.jpg') no-repeat center center fixed;
+            background-size: cover;
+            background-attachment: fixed;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 1rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 var(--mobile-padding);
+        }
+        
+        .card {
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            border: none;
+            overflow: hidden;
+            background-color: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            margin: 1rem auto;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 1.8rem;
+            border-bottom: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .card-header h2 {
+            margin: 0;
+            font-weight: 800;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card-header p {
+            opacity: 0.95;
+            margin-bottom: 0;
+            font-size: 1.2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            padding: 2rem;
+        }
+        
+        @media (min-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .password-section {
+            background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .password-input-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .password-input-container input {
+            padding-right: 100px;
+            font-size: 1.2rem;
+            height: 60px;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        .password-input-container input:focus {
+            border-color: #6a11cb;
+            box-shadow: 0 0 0 4px rgba(106, 17, 203, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .char-counter {
+            position: absolute;
+            right: 70px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 600;
+            background: rgba(108, 117, 125, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            z-index: 10;
+            height: 100%;
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+            font-size: 1.4rem;
+            transition: all 0.3s;
+        }
+        
+        .toggle-password:hover {
+            color: #2575fc;
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .btn-action {
+            padding: 1rem 1.5rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        
+        .btn-analyze {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+        }
+        
+        .btn-generate {
+            background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+            color: white;
+        }
+        
+        .btn-history {
+            background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);
+            color: white;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-action:active {
+            transform: translateY(0);
+        }
+        
+        .strength-visual {
+            margin: 2rem 0;
+        }
+        
+        .strength-bar {
+            height: 25px;
+            border-radius: 12px;
+            background: linear-gradient(to right, 
+                var(--weak-color) 0%, 
+                var(--weak-color) 33%, 
+                var(--moderate-color) 33%, 
+                var(--moderate-color) 66%, 
+                var(--strong-color) 66%, 
+                var(--strong-color) 100%);
+            margin: 1rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .strength-indicator {
+            height: 100%;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.3);
+            position: absolute;
+            left: 0;
+            transition: width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .strength-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .score-display {
+            font-size: 3.5rem;
+            font-weight: 900;
+            text-align: center;
+            margin: 1.5rem 0;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .strength-label {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            margin: 1rem 0;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .strength-weak {
+            color: var(--weak-color);
+            background-color: rgba(220, 53, 69, 0.1);
+            border-color: var(--weak-color);
+        }
+        
+        .strength-moderate {
+            color: var(--moderate-color);
+            background-color: rgba(255, 193, 7, 0.1);
+            border-color: var(--moderate-color);
+        }
+        
+        .strength-strong {
+            color: var(--strong-color);
+            background-color: rgba(25, 135, 84, 0.1);
+            border-color: var(--strong-color);
+        }
+        
+        .strength-excellent {
+            color: var(--excellent-color);
+            background-color: rgba(13, 110, 253, 0.1);
+            border-color: var(--excellent-color);
+        }
+        
+        .criteria-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .criterion-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .criterion-card.met {
+            border-color: var(--strong-color);
+            background: linear-gradient(to right, rgba(25, 135, 84, 0.05), white);
+            box-shadow: 0 5px 15px rgba(25, 135, 84, 0.1);
+        }
+        
+        .criterion-card.unmet {
+            border-color: var(--weak-color);
+            background: linear-gradient(to right, rgba(220, 53, 69, 0.05), white);
+        }
+        
+        .criterion-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .criterion-card.met .criterion-icon {
+            background: var(--strong-color);
+            color: white;
+        }
+        
+        .criterion-card.unmet .criterion-icon {
+            background: var(--weak-color);
+            color: white;
+        }
+        
+        .criterion-content {
+            flex: 1;
+        }
+        
+        .criterion-points {
+            font-weight: 700;
+            font-size: 1.3rem;
+            padding: 5px 12px;
+            border-radius: 20px;
+            background: #f8f9fa;
+        }
+        
+        .feedback-section {
+            background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-top: 2rem;
+            border-left: 5px solid #2575fc;
+        }
+        
+        .history-section {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            display: none;
+        }
+        
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+            transition: all 0.3s;
+        }
+        
+        .history-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .history-strength {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .security-tips {
+            background: linear-gradient(to bottom right, #fff3cd, #ffeaa7);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border-left: 5px solid #ffc107;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            html {
+                font-size: 14px;
+            }
+            
+            body {
+                padding: 0.5rem;
+            }
+            
+            .container {
+                padding: 0 0.75rem;
+            }
+            
+            .card-header {
+                padding: 1.2rem;
+            }
+            
+            .card-header h2 {
+                font-size: 1.8rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+                grid-template-columns: 1fr;
+            }
+            
+            .password-section, .feedback-section {
+                padding: 1.5rem;
+            }
+            
+            .password-input-container input {
+                height: 50px;
+                font-size: 1rem;
+                padding-right: 90px;
+            }
+            
+            .score-display {
+                font-size: 2.5rem;
+            }
+            
+            .strength-label {
+                font-size: 1.4rem;
+                padding: 0.8rem 1.2rem;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .criteria-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .strength-bar {
+                height: 20px;
+            }
+            
+            .char-counter {
+                right: 60px;
+                font-size: 0.8rem;
+            }
+            
+            .toggle-password {
+                font-size: 1.2rem;
+                padding: 0 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            html {
+                font-size: 13px;
+            }
+            
+            body {
+                padding: 0.25rem;
+            }
+            
+            .card-header h2 {
+                font-size: 1.5rem;
+            }
+            
+            .password-input-container input {
+                height: 45px;
+            }
+            
+            .score-display {
+                font-size: 2rem;
+            }
+            
+            .strength-label {
+                font-size: 1.2rem;
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .criterion-card {
+                flex-direction: column;
+                text-align: center;
+                padding: 1rem;
+            }
+        }
+        
+        @media (min-width: 1400px) {
+            .container {
+                max-width: 1400px;
+            }
+            
+            .card-header h2 {
+                font-size: 3rem;
+            }
+            
+            .score-display {
+                font-size: 4rem;
+            }
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #6a11cb, #2575fc);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, #2575fc, #6a11cb);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header text-center">
+                <h2><i class="fas fa-shield-alt me-2"></i>Advanced Password Strength Analyzer</h2>
+                <p>Check, generate, and analyze passwords in real-time across all devices</p>
+            </div>
+            
+            <div class="main-content">
+                <div class="password-section">
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-bold fs-5">
+                            <i class="fas fa-key me-2"></i>Enter Your Password
+                        </label>
+                        <div class="password-input-container">
+                            <input type="password" class="form-control form-control-lg" 
+                                   id="password" 
+                                   placeholder="Type or generate a password"
+                                   autocomplete="new-password">
+                            <span class="char-counter" id="charCounter">0 chars</span>
+                            <button type="button" class="toggle-password" id="togglePassword" title="Show/Hide Password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="form-text mt-2">
+                            <i class="fas fa-info-circle me-1"></i> Strong passwords should be at least 12 characters with mixed characters
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button type="button" class="btn-action btn-analyze" id="analyzeBtn">
+                            <i class="fas fa-chart-line"></i>Analyze Now
+                        </button>
+                        <button type="button" class="btn-action btn-generate" id="generateBtn">
+                            <i class="fas fa-magic"></i>Generate Strong
+                        </button>
+                        <button type="button" class="btn-action btn-history" id="historyBtn">
+                            <i class="fas fa-history"></i>View History
+                        </button>
+                    </div>
+                    
+                    <div class="strength-visual">
+                        <div class="strength-bar">
+                            <div class="strength-indicator" id="strengthIndicator" style="width: 0%"></div>
+                        </div>
+                        <div class="strength-labels">
+                            <span style="color: var(--weak-color)">Weak</span>
+                            <span style="color: var(--moderate-color)">Moderate</span>
+                            <span style="color: var(--strong-color)">Strong</span>
+                            <span style="color: var(--excellent-color)">Excellent</span>
+                        </div>
+                    </div>
+                    
+                    <div class="score-display">
+                        Score: <span id="scoreValue">0</span>/12
+                    </div>
+                    
+                    <div class="strength-label" id="strengthLabel">
+                        <i class="fas fa-lock"></i>
+                        <span>Enter a password</span>
+                    </div>
+                    
+                    <div class="security-tips">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-lightbulb me-2"></i>Security Tips:</h6>
+                        <ul class="mb-0" style="padding-left: 1.5rem;">
+                            <li>Use at least 12 characters</li>
+                            <li>Combine letters, numbers, and symbols</li>
+                            <li>Avoid common words and patterns</li>
+                            <li>Use different passwords for different sites</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div>
+                    <h5 class="fw-bold mb-4 fs-5">
+                        <i class="fas fa-list-check me-2"></i>Password Criteria
+                    </h5>
+                    
+                    <div class="criteria-grid" id="criteriaGrid">
+                        <!-- Criteria cards will be inserted here by JavaScript -->
+                    </div>
+                    
+                    <div class="feedback-section">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-comment-dots me-2"></i>Real-time Feedback
+                        </h6>
+                        <p id="feedbackText" class="mb-0">Your password feedback will appear here as you type. We'll provide specific recommendations to improve your password strength.</p>
+                    </div>
+                    
+                    <div class="history-section" id="historySection">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-history me-2"></i>Password History
+                        </h6>
+                        <div class="history-list" id="historyList">
+                            <!-- History items will be inserted here -->
+                        </div>
+                        <div class="text-center mt-3">
+                            <button type="button" class="btn btn-sm btn-outline-danger" id="clearHistoryBtn">
+                                <i class="fas fa-trash me-1"></i>Clear History
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Advanced Password Strength Analyzer &copy; 2026 | Responsive across all devices</p>
+            <p class="mt-2" style="font-size: 0.8rem; opacity: 0.7;">
+                <i class="fas fa-mobile-alt me-1"></i> Optimized for mobile, tablet, and desktop
+            </p>
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // DOM Elements
+        const passwordInput = document.getElementById('password');
+        const togglePasswordBtn = document.getElementById('togglePassword');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const generateBtn = document.getElementById('generateBtn');
+        const historyBtn = document.getElementById('historyBtn');
+        const charCounter = document.getElementById('charCounter');
+        const scoreValue = document.getElementById('scoreValue');
+        const strengthLabel = document.getElementById('strengthLabel');
+        const strengthIndicator = document.getElementById('strengthIndicator');
+        const feedbackText = document.getElementById('feedbackText');
+        const criteriaGrid = document.getElementById('criteriaGrid');
+        const historySection = document.getElementById('historySection');
+        const historyList = document.getElementById('historyList');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        
+        // Password history storage
+        let passwordHistory = JSON.parse(localStorage.getItem('passwordHistory')) || [];
+        
+        // Initialize criteria cards
+        const criteria = [
+            {
+                id: 'length',
+                title: 'Minimum Length',
+                description: 'At least 12 characters',
+                icon: 'fas fa-ruler-horizontal',
+                points: 3,
+                test: (pwd) => pwd.length >= 12
+            },
+            {
+                id: 'numbers',
+                title: 'Contains Numbers',
+                description: 'Includes digits (0-9)',
+                icon: 'fas fa-hashtag',
+                points: 2,
+                test: (pwd) => /\d/.test(pwd)
+            },
+            {
+                id: 'symbols',
+                title: 'Contains Symbols',
+                description: 'Includes special characters',
+                icon: 'fas fa-asterisk',
+                points: 2,
+                test: (pwd) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd)
+            },
+            {
+                id: 'uppercase',
+                title: 'Uppercase Letters',
+                description: 'Contains uppercase (A-Z)',
+                icon: 'fas fa-text-height',
+                points: 2,
+                test: (pwd) => /[A-Z]/.test(pwd)
+            },
+            {
+                id: 'lowercase',
+                title: 'Lowercase Letters',
+                description: 'Contains lowercase (a-z)',
+                icon: 'fas fa-text-height',
+                points: 1,
+                test: (pwd) => /[a-z]/.test(pwd)
+            },
+            {
+                id: 'no-common',
+                title: 'Not Common',
+                description: 'Not a common password',
+                icon: 'fas fa-ban',
+                points: 2,
+                test: (pwd) => !['password', '123456', 'qwerty', 'letmein'].includes(pwd.toLowerCase())
+            }
+        ];
+        
+        // Render criteria cards
+        function renderCriteriaCards() {
+            criteriaGrid.innerHTML = '';
+            criteria.forEach(criterion => {
+                const card = document.createElement('div');
+                card.className = 'criterion-card';
+                card.id = `criterion-${criterion.id}`;
+                card.innerHTML = `
+                    <div class="criterion-icon">
+                        <i class="${criterion.icon}"></i>
+                    </div>
+                    <div class="criterion-content">
+                        <div class="fw-bold">${criterion.title}</div>
+                        <div class="small text-muted">${criterion.description}</div>
+                    </div>
+                    <div class="criterion-points">+${criterion.points}</div>
+                `;
+                criteriaGrid.appendChild(card);
+            });
+        }
+        
+        // Initialize
+        renderCriteriaCards();
+        updateHistoryDisplay();
+        
+        // Toggle password visibility
+        togglePasswordBtn.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            if (type === 'text') {
+                this.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                this.setAttribute('title', 'Hide Password');
+            } else {
+                this.innerHTML = '<i class="fas fa-eye"></i>';
+                this.setAttribute('title', 'Show Password');
+            }
+        });
+        
+        // Character counter
+        passwordInput.addEventListener('input', function() {
+            const length = this.value.length;
+            charCounter.textContent = `${length} chars`;
+            
+            // Color code based on length
+            if (length < 8) {
+                charCounter.style.color = 'var(--weak-color)';
+            } else if (length < 12) {
+                charCounter.style.color = 'var(--moderate-color)';
+            } else {
+                charCounter.style.color = 'var(--strong-color)';
+            }
+            
+            // Real-time analysis
+            analyzePassword();
+        });
+        
+        // Analyze password function
+        function analyzePassword() {
+            const password = passwordInput.value;
+            let totalScore = 0;
+            let metCriteria = [];
+            
+            // Test each criterion
+            criteria.forEach(criterion => {
+                const card = document.getElementById(`criterion-${criterion.id}`);
+                const isMet = criterion.test(password);
+                
+                if (isMet) {
+                    totalScore += criterion.points;
+                    metCriteria.push(criterion.title);
+                    card.className = 'criterion-card met fade-in';
+                } else {
+                    card.className = 'criterion-card unmet fade-in';
+                }
+            });
+            
+            // Additional scoring for length beyond 12
+            if (password.length > 12) {
+                totalScore += Math.min(2, Math.floor((password.length - 12) / 4));
+            }
+            
+            // Cap score at 12
+            totalScore = Math.min(12, totalScore);
+            
+            // Update UI
+            updateUI(totalScore, password, metCriteria);
+            
+            return { score: totalScore, password };
+        }
+        
+        // Update UI with analysis results
+        function updateUI(score, password, metCriteria) {
+            // Update score
+            scoreValue.textContent = score;
+            
+            // Update strength indicator
+            const percentage = (score / 12) * 100;
+            strengthIndicator.style.width = `${percentage}%`;
+            
+            // Update strength label
+            let strengthText, strengthClass, strengthColor;
+            
+            if (score === 0) {
+                strengthText = "Enter a password";
+                strengthClass = "";
+                strengthColor = "#6c757d";
+                strengthLabel.innerHTML = '<i class="fas fa-lock"></i><span>Enter a password</span>';
+            } else if (score <= 4) {
+                strengthText = "Weak";
+                strengthClass = "strength-weak";
+                strengthColor = "var(--weak-color)";
+                strengthLabel.innerHTML = `<i class="fas fa-times-circle"></i><span>Weak Password</span>`;
+            } else if (score <= 8) {
+                strengthText = "Moderate";
+                strengthClass = "strength-moderate";
+                strengthColor = "var(--moderate-color)";
+                strengthLabel.innerHTML = `<i class="fas fa-exclamation-circle"></i><span>Moderate Password</span>`;
+            } else if (score <= 10) {
+                strengthText = "Strong";
+                strengthClass = "strength-strong";
+                strengthColor = "var(--strong-color)";
+                strengthLabel.innerHTML = `<i class="fas fa-check-circle"></i><span>Strong Password</span>`;
+            } else {
+                strengthText = "Excellent";
+                strengthClass = "strength-excellent";
+                strengthColor = "var(--excellent-color)";
+                strengthLabel.innerHTML = `<i class="fas fa-shield-alt"></i><span>Excellent Password!</span>`;
+            }
+            
+            // Update strength label appearance
+            strengthLabel.className = `strength-label ${strengthClass} fade-in`;
+            strengthIndicator.style.background = `linear-gradient(to right, ${strengthColor}, ${strengthColor}dd)`;
+            
+            // Update feedback
+            if (password.length === 0) {
+                feedbackText.textContent = "Your password feedback will appear here as you type. We'll provide specific recommendations to improve your password strength.";
+            } else {
+                const feedback = generateFeedback(score, password, metCriteria);
+                feedbackText.innerHTML = feedback;
+            }
+        }
+        
+        // Generate feedback based on score
+        function generateFeedback(score, password, metCriteria) {
+            const missing = criteria.filter(c => !metCriteria.includes(c.title)).map(c => c.title);
+            
+            if (score === 0) {
+                return `<span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>Please enter a password to analyze.</span>`;
+            } else if (score <= 4) {
+                return `<span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>Very weak password!<br>
+                <span class="text-muted">Add: ${missing.join(', ').toLowerCase()}.</span></span>`;
+            } else if (score <= 8) {
+                return `<span class="text-warning"><i class="fas fa-exclamation-circle me-1"></i>Moderate password.<br>
+                <span class="text-muted">Improve by adding: ${missing.slice(0, 2).join(' or ').toLowerCase()}.</span></span>`;
+            } else if (score <= 10) {
+                return `<span class="text-success"><i class="fas fa-check-circle me-1"></i>Strong password!<br>
+                <span class="text-muted">Good job! Consider making it longer for extra security.</span></span>`;
+            } else {
+                return `<span class="text-primary"><i class="fas fa-shield-alt me-1"></i>Excellent password!<br>
+                <span class="text-muted">Your password meets all security criteria. Well done!</span></span>`;
+            }
+        }
+        
+        // Generate strong password
+        generateBtn.addEventListener('click', function() {
+            const length = 16;
+            const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
+            let password = "";
+            
+            for (let i = 0; i < length; i++) {
+                const randomIndex = Math.floor(Math.random() * charset.length);
+                password += charset[randomIndex];
+            }
+            
+            passwordInput.value = password;
+            passwordInput.setAttribute('type', 'text');
+            togglePasswordBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            togglePasswordBtn.setAttribute('title', 'Hide Password');
+            
+            analyzePassword();
+            addToHistory(password);
+            
+            // Visual feedback
+            this.classList.add('pulse');
+            setTimeout(() => this.classList.remove('pulse'), 1000);
+        });
+        
+        // Analyze button
+        analyzeBtn.addEventListener('click', function() {
+            if (!passwordInput.value) {
+                feedbackText.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>Please enter a password first!</span>`;
+                passwordInput.focus();
+                return;
+            }
+            
+            const analysis = analyzePassword();
+            addToHistory(analysis.password);
+            
+            // Visual feedback
+            this.classList.add('pulse');
+            setTimeout(() => this.classList.remove('pulse'), 1000);
+        });
+        
+        // Toggle history section
+        historyBtn.addEventListener('click', function() {
+            historySection.style.display = historySection.style.display === 'block' ? 'none' : 'block';
+            this.innerHTML = historySection.style.display === 'block' 
+                ? '<i class="fas fa-times"></i>Hide History'
+                : '<i class="fas fa-history"></i>View History';
+        });
+        
+        // Add password to history
+        function addToHistory(password) {
+            if (!password) return;
+            
+            const analysis = analyzePassword();
+            
+            // Don't add duplicates in a row
+            if (passwordHistory.length > 0 && passwordHistory[0].password === password) {
+                return;
+            }
+            
+            const historyItem = {
+                password: maskPassword(password),
+                score: analysis.score,
+                strength: getStrengthText(analysis.score),
+                timestamp: new Date().toLocaleTimeString(),
+                date: new Date().toLocaleDateString()
+            };
+            
+            passwordHistory.unshift(historyItem);
+            
+            // Keep only last 10 items
+            if (passwordHistory.length > 10) {
+                passwordHistory.pop();
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('passwordHistory', JSON.stringify(passwordHistory));
+            
+            // Update display
+            updateHistoryDisplay();
+        }
+        
+        // Mask password for display
+        function maskPassword(password) {
+            if (password.length <= 4) {
+                return '•'.repeat(password.length);
+            }
+            return password.substring(0, 2) + '•'.repeat(password.length - 4) + password.substring(password.length - 2);
+        }
+        
+        // Get strength text from score
+        function getStrengthText(score) {
+            if (score <= 4) return "Weak";
+            if (score <= 8) return "Moderate";
+            if (score <= 10) return "Strong";
+            return "Excellent";
+        }
+        
+        // Update history display
+        function updateHistoryDisplay() {
+            historyList.innerHTML = '';
+            
+            if (passwordHistory.length === 0) {
+                historyList.innerHTML = '<div class="text-center text-muted py-4">No password history yet</div>';
+                return;
+            }
+            
+            passwordHistory.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item fade-in';
+                historyItem.innerHTML = `
+                    <div>
+                        <div class="fw-bold">${item.password}</div>
+                        <div class="small text-muted">${item.date} ${item.timestamp}</div>
+                    </div>
+                    <div>
+                        <span class="history-strength" style="
+                            background-color: ${getStrengthColor(item.score)};
+                            color: white;
+                        ">
+                            ${item.strength} (${item.score}/12)
+                        </span>
+                    </div>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // Get color for strength badge
+        function getStrengthColor(score) {
+            if (score <= 4) return "var(--weak-color)";
+            if (score <= 8) return "var(--moderate-color)";
+            if (score <= 10) return "var(--strong-color)";
+            return "var(--excellent-color)";
+        }
+        
+        // Clear history
+        clearHistoryBtn.addEventListener('click', function() {
+            if (confirm("Are you sure you want to clear all password history?")) {
+                passwordHistory = [];
+                localStorage.removeItem('passwordHistory');
+                updateHistoryDisplay();
+            }
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+Enter to analyze
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                analyzeBtn.click();
+            }
+            
+            // Ctrl+G to generate
+            if (e.ctrlKey && e.key === 'g') {
+                e.preventDefault();
+                generateBtn.click();
+            }
+            
+            // Ctrl+H to toggle history
+            if (e.ctrlKey && e.key === 'h') {
+                e.preventDefault();
+                historyBtn.click();
+            }
+        });
+        
+        // Focus on password input when page loads
+        window.addEventListener('load', function() {
+            passwordInput.focus();
+            
+            // Add initial animation
+            document.querySelector('.card').style.animation = 'fadeIn 0.8s ease-out';
+            
+            // Check for saved history
+            if (passwordHistory.length > 0) {
+                historyBtn.innerHTML = '<i class="fas fa-history"></i>View History (' + passwordHistory.length + ')';
+            }
+        });
+        
+        // Initial analysis
+        analyzePassword();
+    </script>
+</body>
+</html>
